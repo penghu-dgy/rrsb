@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.dao.WorkorderDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.entity.WorkorderEntity" id="workorderMap">
+        <result property="orderid" column="orderId"/>
+        <result property="ordertype" column="orderType"/>
+        <result property="orderbegintime" column="orderBeginTime"/>
+        <result property="orderendtime" column="orderEndTime"/>
+        <result property="orderdesc" column="orderDesc"/>
+        <result property="ordercust" column="orderCust"/>
+        <result property="orderstate" column="orderState"/>
+        <result property="orderemp" column="orderEmp"/>
+        <result property="bz1" column="bz1"/>
+        <result property="bz2" column="bz2"/>
+        <result property="bz3" column="bz3"/>
+        <result property="entid" column="entId"/>
+        <result property="constructionid" column="constructionId"/>
+        <result property="distributionname" column="distributionName"/>
+        <result property="distributionid" column="distributionId"/>
+        <result property="distributionendtime" column="distributionEndTime"/>
+        <result property="distributionstarttime" column="distributionStartTime"/>
+        <result property="constructionstarttime" column="constructionStartTime"/>
+        <result property="constructionname" column="constructionName"/>
+        <result property="constructionendtime" column="constructionEndTime"/>
+        <result property="distrubutiontel" column="distrubutionTel"/>
+        <result property="construtiontel" column="construtionTel"/>
+        <result property="orderempname" column="orderEmpName"/>
+        <result property="orderemptel" column="orderEmpTel"/>
+    </resultMap>
+    
+    <select id="queryWorkorder" parameterType="java.util.HashMap" resultType="java.util.Map" >
+		 select w.orderid orderid,w.ordertype ordertype,w.orderBeginTime orderBeginTime,
+		 w.orderEndTime orderEndTime,w.orderDesc,w.orderState orderState,w.bz1,
+		 c.custName custName,c.custPhone custPhone,c.custProvince custProvince,
+		 c.custCity custCity,c.custArea custArea,c.custAddress custAddress
+		 from workorder w left join customer c on w.ordercust = c.custid
+		  <where>  
+		     <if test="ids != null">
+		     w.orderState in  
+			 <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">  
+			  #{item}  
+			 </foreach>  
+			 </if>
+			 <if test="entid != null">
+			 AND w.entId=#{entid}
+			 </if>
+			 <if test="distributionid != null">
+			 AND w.distributionId=#{distributionid}
+			 </if>
+			 <if test="constructionid != null">
+			 AND w.constructionId=#{constructionid}
+			 </if>
+			 <if test="orderemp != null">
+			 AND w.orderEmp=#{orderemp}
+			 </if>
+			 
+			 <if  test="search != null and !&quot;&quot;.equals(search.trim())">
+	            AND( c.custPhone like CONCAT('%', #{search}, '%')
+	            or c.custName like CONCAT('%', #{search}, '%')
+	            or c.custAddress like CONCAT('%', #{search}, '%')
+	            or c.custProvince like CONCAT('%', #{search}, '%')
+	            or c.custCity  like CONCAT('%', #{search}, '%')
+	            or c.custArea  like CONCAT('%', #{search}, '%')
+	            )
+	        </if>
+	        </where>   
+	        
+	        order by w.bz1 desc  
+	</select>
+
+	<select id="queryObject1" resultType="java.util.Map">
+		SELECT
+			cu.custName,
+			wo.orderId,
+			(
+				CASE wo.orderType
+				WHEN 0 THEN
+					'开工'
+				WHEN 1 THEN
+					'收尾'
+				WHEN 2 THEN
+					'维修'
+				END
+			) orderType,
+			emp.empName,
+			wo.bz1,
+			wo.orderDesc,
+			wo.orderBeginTime,
+			wo.orderEndTime,
+			cu.custPhone,
+			emp.empPhone
+		FROM
+			workorder wo
+		LEFT JOIN employee emp ON wo.orderEmp = emp.empId
+		LEFT JOIN customer cu ON wo.orderCust = cu.custId
+		where orderId = #{orderId}
+	</select>
+	
+	<select id="queryObject" resultType="io.renren.entity.WorkorderEntity">
+		select * from workorder where orderId = #{value}
+	</select>
+	
+	<select id="queryList" resultType="io.renren.entity.WorkorderEntity">
+		select * from workorder
+         <where>
+		    <if test="entid != null">
+		         entId = #{entid}
+		    </if> 
+		    <if test="orderstate != null">
+	          AND orderState = #{orderstate}
+	        </if>
+	        <if test="orderemp!=null">
+	          AND orderEmp=#{orderemp}
+	        </if>
+	        <if test="orderid!=null">
+	         AND orderid=#{orderid}
+	        </if>
+         </where> 
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by orderId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+	
+	<select id="searcher" resultType="java.util.Map" parameterType="java.util.Map">
+	
+			SELECT
+			cu.custName,
+			wo.orderId,
+			(
+				CASE wo.orderType
+				WHEN 0 THEN
+					'开工'
+				WHEN 1 THEN
+					'收尾'
+				WHEN 2 THEN
+					'维修'
+				END
+			) orderType,
+			emp.empName,
+			wo.bz1,
+			wo.orderDesc,
+			wo.orderBeginTime,
+			wo.orderEndTime,
+			cu.custPhone,
+			emp.empPhone
+		FROM
+			workorder wo
+		LEFT JOIN employee emp ON wo.orderEmp = emp.empId
+		LEFT JOIN customer cu ON wo.orderCust = cu.custId
+		<where>
+			<if test="entId != null">entId = #{entId}</if>
+			
+			<if test="startTime !=null and endTime != null">
+			AND unix_timestamp(wo.bz1) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND unix_timestamp(#{endTime})
+			</if>
+			
+			<if test="sea != null">
+			AND (
+			cu.custPhone LIKE '%${sea}%'
+			OR cu.custName LIKE '%${sea}%'
+			OR emp.empName LIKE '%${sea}%'
+			OR emp.empName LIKE '%${sea}%'
+			OR wo.orderId LIKE '%${sea}%'
+		)
+			</if>
+			
+		
+	</where>
+		 <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by wo.bz1 desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from workorder 
+		<where>
+		<if test="entId != null"> entId = #{entId}</if>
+		</where>
+	</select>
+	 
+	<insert id="save" parameterType="io.renren.entity.WorkorderEntity">
+			insert into workorder
+		(
+			`orderId`, 
+			`orderType`, 
+			`orderBeginTime`, 
+			`orderEndTime`, 
+			`orderDesc`, 
+			`orderCust`, 
+			`orderState`, 
+			`orderEmp`, 
+			`bz1`, 
+			`bz2`, 
+			`bz3`, 
+			`entId`, 
+			`constructionId`, 
+			`distributionName`, 
+			`distributionId`, 
+			`distributionEndTime`, 
+			`distributionStartTime`, 
+			`constructionStartTime`, 
+			`constructionName`, 
+			`constructionEndTime`, 
+			`distrubutionTel`, 
+			`construtionTel`, 
+			`orderEmpName`, 
+			`orderEmpTel`
+		)
+		values
+		(
+			#{orderid}, 
+			#{ordertype}, 
+			#{orderbegintime}, 
+			#{orderendtime}, 
+			#{orderdesc}, 
+			#{ordercust}, 
+			#{orderstate}, 
+			#{orderemp}, 
+			#{bz1}, 
+			#{bz2}, 
+			#{bz3}, 
+			#{entid}, 
+			#{constructionid}, 
+			#{distributionname}, 
+			#{distributionid}, 
+			#{distributionendtime}, 
+			#{distributionstarttime}, 
+			#{constructionstarttime}, 
+			#{constructionname}, 
+			#{constructionendtime}, 
+			#{distrubutiontel}, 
+			#{construtiontel}, 
+			#{orderempname}, 
+			#{orderemptel}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.entity.WorkorderEntity">
+		update workorder 
+		<set>
+			<if test="ordertype != null">`orderType` = #{ordertype}, </if>
+			<if test="orderbegintime != null">`orderBeginTime` = #{orderbegintime}, </if>
+			<if test="orderendtime != null">`orderEndTime` = #{orderendtime}, </if>
+			<if test="orderdesc != null">`orderDesc` = #{orderdesc}, </if>
+			<if test="ordercust != null">`orderCust` = #{ordercust}, </if>
+			<if test="orderstate != null">`orderState` = #{orderstate}, </if>
+			<if test="orderemp != null">`orderEmp` = #{orderemp}, </if>
+			<if test="bz1 != null">`bz1` = #{bz1}, </if>
+			<if test="bz2 != null">`bz2` = #{bz2}, </if>
+			<if test="bz3 != null">`bz3` = #{bz3}, </if>
+			<if test="entid != null">`entId` = #{entid}, </if>
+			<if test="constructionid != null">`constructionId` = #{constructionid}, </if>
+			<if test="distributionname != null">`distributionName` = #{distributionname}, </if>
+			<if test="distributionid != null">`distributionId` = #{distributionid}, </if>
+			<if test="distributionendtime != null">`distributionEndTime` = #{distributionendtime}, </if>
+			<if test="distributionstarttime != null">`distributionStartTime` = #{distributionstarttime}, </if>
+			<if test="constructionstarttime != null">`constructionStartTime` = #{constructionstarttime}, </if>
+			<if test="constructionname != null">`constructionName` = #{constructionname}, </if>
+			<if test="constructionendtime != null">`constructionEndTime` = #{constructionendtime}, </if>
+			<if test="distrubutiontel != null">`distrubutionTel` = #{distrubutiontel}, </if>
+			<if test="construtiontel != null">`construtionTel` = #{construtiontel}, </if>
+			<if test="orderempname != null">`orderEmpName` = #{orderempname}, </if>
+			<if test="orderemptel != null">`orderEmpTel` = #{orderemptel}</if>
+		</set>
+		where orderId = #{orderid}
+	</update>
+	
+	<delete id="delete">
+		delete from workorder where orderId = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from workorder where orderId in 
+		<foreach item="orderid" collection="array" open="(" separator="," close=")">
+			#{orderid}
+		</foreach>
+	</delete>
+
+</mapper>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.dao.RecruitDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.entity.RecruitEntity" id="recruitMap">
+        <result property="recruitid" column="recruitId"/>
+        <result property="recruittitle" column="recruitTitle"/>
+        <result property="recruitcontent" column="recruitContent"/>
+        <result property="recruittime" column="recruitTime"/>
+        <result property="recruitendtime" column="recruitEndTime"/>
+        <result property="recruitent" column="recruitEnt"/>
+        <result property="recruitemp" column="recruitEmp"/>
+        <result property="recruitstate" column="recruitState"/>
+        <result property="recruitflag" column="recruitFlag"/>
+        <result property="bz1" column="bz1"/>
+        <result property="bz2" column="bz2"/>
+        <result property="bz3" column="bz3"/>
+        <result property="recruitProvice" column="recruitProvice"/>
+        <result property="recruitCity" column="recruitCity"/>
+        <result property="recruitArea" column="recruitArea"/>
+        
+    </resultMap>
+
+	<select id="queryObject" resultType="io.renren.entity.RecruitEntity">
+		select * from recruit where recruitId = #{value}
+	</select>
+	
+	<select id="queryMap" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		select * from recruit left join employee on recruit.recruitEmp = employee.empId left join enterprise on recruit.recruitent = enterprise.entid
+		<where>
+			<if test="recruitemp !=null">recruitemp=#{recruitemp}</if>
+			<if test="recruitid !=null">and recruitId=#{recruitid}</if>			
+			<if test="recruitCity !=null">and recruitCity=#{recruitCity}</if>
+		</where>		
+	</select>
+		
+		
+	<select id="queryList" resultType="io.renren.entity.RecruitEntity">
+		select * from recruit
+		<where>
+		<if test="recruitEnt != null">recruitEnt = #{recruitEnt}</if>
+		
+		</where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by recruitId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from recruit where recruitEnt = #{recruitEnt}
+	</select>
+	 
+	<insert id="save" parameterType="io.renren.entity.RecruitEntity" >
+		insert into recruit
+		(
+			`recruitTitle`, 
+			`recruitContent`, 
+			`recruitTime`, 
+			`recruitEndTime`, 
+			`recruitEnt`, 
+			`recruitEmp`, 
+			`recruitState`, 
+			`recruitFlag`, 
+			`bz1`, 
+			`bz2`, 
+			`bz3`,
+			`recruitProvice`,
+			`recruitCity`,
+			`recruitArea`
+		)
+		values
+		(
+			#{recruittitle}, 
+			#{recruitcontent}, 
+			#{recruittime}, 
+			#{recruitendtime}, 
+			#{recruitent}, 
+			#{recruitemp}, 
+			#{recruitstate}, 
+			#{recruitflag}, 
+			#{bz1}, 
+			#{bz2}, 
+			#{bz3},
+			#{recruitProvice},
+			#{recruitCity},
+			#{recruitArea}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.entity.RecruitEntity">
+		update recruit 
+		<set>
+			<if test="recruittitle != null">`recruitTitle` = #{recruittitle}, </if>
+			<if test="recruitcontent != null">`recruitContent` = #{recruitcontent}, </if>
+			<if test="recruittime != null">`recruitTime` = #{recruittime}, </if>
+			<if test="recruitendtime != null">`recruitEndTime` = #{recruitendtime}, </if>
+			<if test="recruitent != null">`recruitEnt` = #{recruitent}, </if>
+			<if test="recruitemp != null">`recruitEmp` = #{recruitemp}, </if>
+			<if test="recruitstate != null">`recruitState` = #{recruitstate}, </if>
+			<if test="recruitflag != null">`recruitFlag` = #{recruitflag}, </if>
+			<if test="bz1 != null">`bz1` = #{bz1}, </if>
+			<if test="bz2 != null">`bz2` = #{bz2}, </if>
+			<if test="bz3 != null">`bz3` = #{bz3},</if>
+			<if test="recruitProvice != null">`recruitProvice` = #{recruitProvice},</if>
+			<if test="recruitCity != null">`recruitCity` = #{recruitCity},</if>
+			<if test="recruitArea != null">`recruitArea` = #{recruitArea}</if>
+		</set>
+		<where>
+		<if test="recruitent !=null">and recruitent=#{recruitent}</if>	
+		</where>
+		
+	</update>
+	
+	<delete id="delete">
+		delete from recruit where recruitId = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from recruit where recruitId in 
+		<foreach item="recruitid" collection="array" open="(" separator="," close=")">
+			#{recruitid}
+		</foreach>
+	</delete>
+
+</mapper>

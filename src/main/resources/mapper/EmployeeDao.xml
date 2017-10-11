@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.dao.EmployeeDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.entity.EmployeeEntity" id="employeeMap">
+        <result property="empid" column="empId"/>
+        <result property="empname" column="empName"/>
+        <result property="emptype" column="empType"/>
+        <result property="enpbirthday" column="enpBirthday"/>
+        <result property="emphiretime" column="empHireTime"/>
+        <result property="emptime" column="empTime"/>
+        <result property="empexpiretime" column="empExpireTime"/>
+        <result property="empperformance" column="empPerformance"/>
+        <result property="empsex" column="empSex"/>
+        <result property="empphone" column="empPhone"/>
+        <result property="emppassword" column="empPassword"/>
+        <result property="empmail" column="empMail"/>
+        <result property="empqq" column="empQQ"/>
+        <result property="empwechat" column="empWechat"/>
+        <result property="empstate" column="empState"/>
+        <result property="empent" column="empEnt"/>
+        <result property="empyzm" column="empYzm"/>
+        <result property="empdetail" column="empDetail"/>
+        <result property="empyzmexpiretime" column="empYzmExpireTime"/>
+        <result property="bz1" column="bz1"/>
+        <result property="bz2" column="bz2"/>
+        <result property="bz3" column="bz3"/>
+    </resultMap>
+  
+     <select id="queryObjectByCondition" resultType="io.renren.entity.EmployeeEntity" parameterType="java.util.HashMap">
+		select * from employee 
+		<where>
+			<if test="empent!=null">empEnt = #{empent}</if>
+			<if test="empphone!=null">and empPhone=#{empphone}</if>
+			<if test="empyzm!=null">and empYzm=#{empyzm}</if>
+			<if test="emppassword!=null">and empPassword =#{emppassword}</if>
+			
+			<if test="offset != null and limit != null">
+				limit #{offset}, #{limit}
+			</if>
+		</where>
+	</select> 
+
+
+
+	<select id="queryObject" resultType="io.renren.entity.EmployeeEntity">
+		select * from employee where empId = #{value}
+	</select>
+	
+	<select id="queryByPhone" resultType="io.renren.entity.EmployeeEntity">
+		select * from employee where empPhone = #{value}
+	</select>
+
+
+	<select id="queryList" resultType="io.renren.entity.EmployeeEntity" parameterType="java.util.Map">
+		select * from employee 
+		<where>
+			<if test="empent!=null">empEnt = #{empent}</if>
+			<if test="empphone!=null">and empPhone=#{empphone}</if>
+			<if test="empyzm!=null">and empYzm=#{empyzm}</if>
+			<if test="emppassword!=null">and empPassword =#{emppassword}</if>
+			<if test="empid != null">and  empId = #{empid}</if>
+			
+		</where>
+		
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by empId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+	
+	
+	<select id="queryBack" resultType="io.renren.entity.EmployeeEntity" parameterType="java.util.Map">
+		select empName , empType ,empExpiretime ,empPhone,(case empState when 1 then '在职' else '申请' end) empState  from employee e
+		<where>
+			<if test="empent!=null">empEnt = #{empent}</if>
+			<if test="empphone!=null">and empPhone=#{empphone}</if>
+			<if test="empyzm!=null">and empYzm=#{empyzm}</if>
+			<if test="emppassword!=null">and empPassword =#{emppassword}</if>
+			<if test="empid != null">and  empId = #{empid}</if>
+			<if test="sea != null"> and (empName like CONCAT(CONCAT('%', #{sea}), '%') or empPhone like CONCAT(CONCAT('%', #{sea}), '%') )</if>
+			
+		</where>
+		
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by empId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from employee 
+		<where>
+			<if test="empent != null">empEnt = #{empent}</if>
+		</where>
+	</select>
+	 
+	<insert id="save" parameterType="io.renren.entity.EmployeeEntity" useGeneratedKeys="true" keyProperty="empid">
+		insert into employee
+		(
+			`empName`, 
+			`empType`, 
+			`enpBirthday`, 
+			`empHireTime`, 
+			`empTime`, 
+			`empExpireTime`, 
+			`empPerformance`, 
+			`empSex`, 
+			`empPhone`, 
+			`empPassword`, 
+			`empMail`, 
+			`empQQ`, 
+			`empWechat`, 
+			`empState`, 
+			`empEnt`, 
+			`empYzm`, 
+			`empDetail`, 
+			`empYzmExpireTime`, 
+			`bz1`, 
+			`bz2`, 
+			`bz3`
+		)
+		values
+		(
+			#{empname}, 
+			#{emptype}, 
+			#{enpbirthday}, 
+			#{emphiretime}, 
+			#{emptime}, 
+			#{empexpiretime}, 
+			#{empperformance}, 
+			#{empsex}, 
+			#{empphone}, 
+			#{emppassword}, 
+			#{empmail}, 
+			#{empqq}, 
+			#{empwechat}, 
+			#{empstate}, 
+			#{empent}, 
+			#{empyzm}, 
+			#{empdetail}, 
+			#{empyzmexpiretime}, 
+			#{bz1}, 
+			#{bz2}, 
+			#{bz3}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.entity.EmployeeEntity">
+		update employee 
+		<set>
+			<if test="empname != null">`empName` = #{empname}, </if>
+			<if test="emptype != null">`empType` = #{emptype}, </if>
+			<if test="enpbirthday != null">`enpBirthday` = #{enpbirthday}, </if>
+			<if test="emphiretime != null">`empHireTime` = #{emphiretime}, </if>
+			<if test="emptime != null">`empTime` = #{emptime}, </if>
+			<if test="empexpiretime != null">`empExpireTime` = #{empexpiretime}, </if>
+			<if test="empperformance != null">`empPerformance` = #{empperformance}, </if>
+			<if test="empsex != null">`empSex` = #{empsex}, </if>
+			<if test="empphone != null">`empPhone` = #{empphone}, </if>
+			<if test="emppassword != null">`empPassword` = #{emppassword}, </if>
+			<if test="empmail != null">`empMail` = #{empmail}, </if>
+			<if test="empqq != null">`empQQ` = #{empqq}, </if>
+			<if test="empwechat != null">`empWechat` = #{empwechat}, </if>
+			<if test="empstate != null">`empState` = #{empstate}, </if>
+			<if test="empent != null">`empEnt` = #{empent}, </if>
+			<if test="empyzm != null">`empYzm` = #{empyzm}, </if>
+			<if test="empdetail != null">`empDetail` = #{empdetail}, </if>
+			<if test="empyzmexpiretime != null">`empYzmExpireTime` = #{empyzmexpiretime}, </if>
+			<if test="bz1 != null">`bz1` = #{bz1}, </if>
+			<if test="bz2 != null">`bz2` = #{bz2}, </if>
+			<if test="bz3 != null">`bz3` = #{bz3}</if>
+		</set>
+		where empId = #{empid}
+	</update>
+	
+	<delete id="delete">
+		delete from employee where empId = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from employee where empId in 
+		<foreach item="empid" collection="array" open="(" separator="," close=")">
+			#{empid}
+		</foreach>
+	</delete>
+
+</mapper>

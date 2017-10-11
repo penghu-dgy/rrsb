@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.dao.JobDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.entity.JobEntity" id="jobMap">
+        <result property="jobId" column="job_id"/>
+        <result property="jobTitle" column="job_title"/>
+        <result property="jobCount" column="job_count"/>
+        <result property="jobSalary" column="job_salary"/>
+        <result property="province" column="province"/>
+        <result property="city" column="city"/>
+        <result property="area" column="area"/>
+        <result property="jobPubTime" column="job_pub_time"/>
+        <result property="jobExpireTime" column="job_expire_time"/>
+        <result property="jobDesc" column="job_desc"/>
+        <result property="pubId" column="pub_id"/>
+        <result property="pubName" column="pub_name"/>
+        <result property="pubPhone" column="pub_phone"/>
+        <result property="company" column="company"/>
+        <result property="jobState" column="job_state"/>
+        <result property="bz1" column="bz1"/>
+        <result property="bz2" column="bz2"/>
+        <result property="bz3" column="bz3"/>
+    </resultMap>
+    
+    <select id="jobMap" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+    	select * from job
+    	<where>
+    		<if test="jobId != null">job_id=#{jobId}</if>
+    	</where>  	 
+    </select>
+    
+    <select id="queryMap" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		select * from job
+		<where>
+			<if test="jobId != null">
+			 job_id = #{jobId}
+			</if>
+			<if test="city != null">
+			and	city = #{city}
+			</if>
+			<if test="jobState != null">
+			and	job_state = #{jobState}
+			</if>
+			<if test="pubId != null">
+			and pub_id = #{pubId}
+			</if>
+			<if test="bz1 != null">
+			and bz1 = #{bz1}
+			</if>
+		</where>
+		order by job_id desc
+	</select>
+
+	<select id="queryObject" resultType="io.renren.entity.JobEntity">
+		select * from job where job_id = #{value}		
+	</select>
+
+	<select id="queryList" resultType="io.renren.entity.JobEntity">
+		select * from job
+		<where>
+		<if test='userId != null'> pub_id=#{userId}</if>
+		</where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by job_id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from job 
+	</select>
+	 
+	<insert id="save" parameterType="io.renren.entity.JobEntity">
+		insert into job
+		(
+			`job_id`, 
+			`job_title`, 
+			`job_count`, 
+			`job_salary`, 
+			`province`, 
+			`city`, 
+			`area`, 
+			`job_pub_time`, 
+			`job_expire_time`, 
+			`job_desc`, 
+			`pub_id`, 
+			`pub_name`, 
+			`pub_phone`, 
+			`company`, 
+			`job_state`, 
+			`bz1`, 
+			`bz2`, 
+			`bz3`
+		)
+		values
+		(
+			#{jobId}, 
+			#{jobTitle}, 
+			#{jobCount}, 
+			#{jobSalary}, 
+			#{province}, 
+			#{city}, 
+			#{area}, 
+			#{jobPubTime}, 
+			#{jobExpireTime}, 
+			#{jobDesc}, 
+			#{pubId}, 
+			#{pubName}, 
+			#{pubPhone}, 
+			#{company}, 
+			#{jobState}, 
+			#{bz1}, 
+			#{bz2}, 
+			#{bz3}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.entity.JobEntity">
+		update job 
+		<set>
+			<if test="jobTitle != null">`job_title` = #{jobTitle}, </if>
+			<if test="jobCount != null">`job_count` = #{jobCount}, </if>
+			<if test="jobSalary != null">`job_salary` = #{jobSalary}, </if>
+			<if test="province != null">`province` = #{province}, </if>
+			<if test="city != null">`city` = #{city}, </if>
+			<if test="area != null">`area` = #{area}, </if>
+			<if test="jobPubTime != null">`job_pub_time` = #{jobPubTime}, </if>
+			<if test="jobExpireTime != null">`job_expire_time` = #{jobExpireTime}, </if>
+			<if test="jobDesc != null">`job_desc` = #{jobDesc}, </if>
+			<if test="pubId != null">`pub_id` = #{pubId}, </if>
+			<if test="pubName != null">`pub_name` = #{pubName}, </if>
+			<if test="pubPhone != null">`pub_phone` = #{pubPhone}, </if>
+			<if test="company != null">`company` = #{company}, </if>
+			<if test="jobState != null">`job_state` = #{jobState}, </if>
+			<if test="bz1 != null">`bz1` = #{bz1}, </if>
+			<if test="bz2 != null">`bz2` = #{bz2}, </if>
+			<if test="bz3 != null">`bz3` = #{bz3}</if>
+		</set>
+		where job_id = #{jobId}
+	</update>
+	
+	<delete id="delete">
+		delete from job where job_id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from job where job_id in 
+		<foreach item="jobId" collection="array" open="(" separator="," close=")">
+			#{jobId}
+		</foreach>
+	</delete>
+
+</mapper>

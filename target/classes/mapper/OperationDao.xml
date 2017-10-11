@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.dao.OperationDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.entity.OperationEntity" id="operationMap">
+        <result property="operid" column="operId"/>
+        <result property="operdesc" column="operDesc"/>
+        <result property="opertime" column="operTime"/>
+        <result property="operemp" column="operEmp"/>
+        <result property="operorder" column="operOrder"/>
+        <result property="bz1" column="bz1"/>
+        <result property="bz2" column="bz2"/>
+        <result property="bz3" column="bz3"/>
+    </resultMap>
+    
+    
+
+	<select id="queryObject" resultType="io.renren.entity.OperationEntity">
+		select * from operation where operId = #{value}
+	</select>
+	
+	<select id='queryOperate'  resultType="java.util.Map" parameterType="java.util.Map">
+	select * from operation 
+	<where>
+	<if test="operOrder != null">operOrder = #{operOrder}</if>
+	<if test="operDesc != null">and operDesc = #{operDesc}</if>
+	
+	</where> 
+	</select>
+
+	<select id="queryList" resultType="io.renren.entity.OperationEntity">
+		select * from operation
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by operId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from operation 
+	</select>
+	 
+	<insert id="save" parameterType="io.renren.entity.OperationEntity">
+		insert into operation
+		(
+			`operId`, 
+			`operDesc`, 
+			`operTime`, 
+			`operEmp`, 
+			`operOrder`, 
+			`bz1`, 
+			`bz2`, 
+			`bz3`
+		)
+		values
+		(
+			#{operid}, 
+			#{operdesc}, 
+			#{opertime}, 
+			#{operemp}, 
+			#{operorder}, 
+			#{bz1}, 
+			#{bz2}, 
+			#{bz3}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.entity.OperationEntity">
+		update operation 
+		<set>
+			<if test="operdesc != null">`operDesc` = #{operdesc}, </if>
+			<if test="opertime != null">`operTime` = #{opertime}, </if>
+			<if test="operemp != null">`operEmp` = #{operemp}, </if>
+			<if test="operorder != null">`operOrder` = #{operorder}, </if>
+			<if test="bz1 != null">`bz1` = #{bz1}, </if>
+			<if test="bz2 != null">`bz2` = #{bz2}, </if>
+			<if test="bz3 != null">`bz3` = #{bz3}</if>
+		</set>
+		where operId = #{operid}
+	</update>
+	
+	<delete id="delete">
+		delete from operation where operId = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from operation where operId in 
+		<foreach item="operid" collection="array" open="(" separator="," close=")">
+			#{operid}
+		</foreach>
+	</delete>
+
+</mapper>

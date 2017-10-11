@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.dao.ApplyDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.entity.ApplyEntity" id="applyMap">
+        <result property="appId" column="app_id"/>
+        <result property="jobId" column="job_id"/>
+        <result property="jobName" column="job_name"/>
+        <result property="empId" column="emp_id"/>
+        <result property="empName" column="emp_name"/>
+        <result property="empPhone" column="emp_phone"/>
+        <result property="empTime" column="emp_time"/>
+        <result property="bz1" column="bz1"/>
+        <result property="bz2" column="bz2"/>
+        <result property="bz3" column="bz3"/>
+    </resultMap>
+	
+	<select id="applyselect" resultType="java.util.Map" parameterType="java.util.Map">
+		select * from apply 
+		<where>
+			<if test="jobId != null">job_id = #{jobId}</if>
+			<if test="empId != null">and emp_id = #{empId}</if>
+		</where>
+		
+		 <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by app_id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+	<select id="queryObject" resultType="io.renren.entity.ApplyEntity">
+		select * from apply  where app_id = #{value}
+		
+	</select>
+
+	<select id="bgList" parameterType="java.util.Map" resultType="java.util.Map">
+		select  a.job_id,
+				a.job_name,
+				a.emp_id,
+				a.emp_name,
+				a.emp_phone,
+				a.emp_time,
+				j.company,
+				j.job_count 
+		from apply a 
+		LEFT JOIN job j on j.job_id=a.job_id
+	<where>
+		<if test="company != null">company like '%${company}%' </if>
+	</where>
+	 <choose>
+           <when test="sidx != null and sidx.trim() != ''">
+               order by ${sidx} ${order}
+           </when>
+		<otherwise>
+               order by company desc
+		</otherwise>
+       </choose>
+	<if test="offset != null and limit != null">
+		limit #{offset}, #{limit}
+	</if>
+	</select>
+
+
+
+
+	<select id="queryList" resultType="java.util.Map">
+		select a.job_id,a.job_name,a.emp_id,a.emp_name,a.emp_phone,j.company,j.job_count
+		 from apply a LEFT JOIN job j on j.job_id=a.job_id
+		
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by app_id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from apply 
+	</select>
+	 
+	<insert id="save" parameterType="io.renren.entity.ApplyEntity">
+		insert into apply
+		(
+			`app_id`, 
+			`job_id`, 
+			`job_name`, 
+			`emp_id`, 
+			`emp_name`, 
+			`emp_phone`, 
+			`emp_time`, 
+			`bz1`, 
+			`bz2`, 
+			`bz3`
+		)
+		values
+		(
+			#{appId}, 
+			#{jobId}, 
+			#{jobName}, 
+			#{empId}, 
+			#{empName}, 
+			#{empPhone}, 
+			#{empTime}, 
+			#{bz1}, 
+			#{bz2}, 
+			#{bz3}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.entity.ApplyEntity">
+		update apply 
+		<set>
+			<if test="jobId != null">`job_id` = #{jobId}, </if>
+			<if test="jobName != null">`job_name` = #{jobName}, </if>
+			<if test="empId != null">`emp_id` = #{empId}, </if>
+			<if test="empName != null">`emp_name` = #{empName}, </if>
+			<if test="empPhone != null">`emp_phone` = #{empPhone}, </if>
+			<if test="empTime != null">`emp_time` = #{empTime}, </if>
+			<if test="bz1 != null">`bz1` = #{bz1}, </if>
+			<if test="bz2 != null">`bz2` = #{bz2}, </if>
+			<if test="bz3 != null">`bz3` = #{bz3}</if>
+		</set>
+		where app_id = #{appId}
+	</update>
+	
+	<delete id="delete">
+		delete from apply where app_id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from apply where app_id in 
+		<foreach item="appId" collection="array" open="(" separator="," close=")">
+			#{appId}
+		</foreach>
+	</delete>
+	
+	
+
+</mapper>

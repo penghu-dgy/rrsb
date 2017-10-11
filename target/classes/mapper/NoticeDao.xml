@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.dao.NoticeDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.entity.NoticeEntity" id="noticeMap">
+        <result property="noticeid" column="noticeId"/>
+        <result property="noticetitle" column="noticeTitle"/>
+        <result property="noticecontent" column="noticeContent"/>
+        <result property="noticeaddress" column="noticeAddress"/>
+        <result property="noticetime" column="noticeTime"/>
+        <result property="noticeemp" column="noticeEmp"/>
+        <result property="noticeempname" column="noticeEmpName"/>
+        <result property="noticeentid" column="noticeEntId"/>
+        <result property="bz1" column="bz1"/>
+        <result property="bz2" column="bz2"/>
+        <result property="bz3" column="bz3"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="io.renren.entity.NoticeEntity">
+		select * from notice where noticeId = #{value}
+	</select>
+	
+
+	<select id="queryList" resultType="io.renren.entity.NoticeEntity">
+		select * from notice
+		<where>
+			<if test="noticeentid != null"> noticeentid = #{noticeentid}</if>
+		</where>
+		
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by noticeId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from notice 
+		<where>
+		<if test='entId != null'>noticeentid=#{entId}</if>
+		</where>
+	</select>
+	 
+	<insert id="save" parameterType="io.renren.entity.NoticeEntity" useGeneratedKeys="true" keyProperty="noticeid">
+		insert into notice
+		(
+			`noticeTitle`, 
+			`noticeContent`, 
+			`noticeAddress`, 
+			`noticeTime`, 
+			`noticeEmp`, 
+			`noticeEmpName`, 
+			`noticeEntId`, 
+			`bz1`, 
+			`bz2`, 
+			`bz3`
+		)
+		values
+		(
+			#{noticetitle}, 
+			#{noticecontent}, 
+			#{noticeaddress}, 
+			#{noticetime}, 
+			#{noticeemp}, 
+			#{noticeempname}, 
+			#{noticeentid}, 
+			#{bz1}, 
+			#{bz2}, 
+			#{bz3}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.entity.NoticeEntity">
+		update notice 
+		<set>
+			<if test="noticetitle != null">`noticeTitle` = #{noticetitle}, </if>
+			<if test="noticecontent != null">`noticeContent` = #{noticecontent}, </if>
+			<if test="noticeaddress != null">`noticeAddress` = #{noticeaddress}, </if>
+			<if test="noticetime != null">`noticeTime` = #{noticetime}, </if>
+			<if test="noticeemp != null">`noticeEmp` = #{noticeemp}, </if>
+			<if test="noticeempname != null">`noticeEmpName` = #{noticeempname}, </if>
+			<if test="noticeentid != null">`noticeEntId` = #{noticeentid}, </if>
+			<if test="bz1 != null">`bz1` = #{bz1}, </if>
+			<if test="bz2 != null">`bz2` = #{bz2}, </if>
+			<if test="bz3 != null">`bz3` = #{bz3}</if>
+		</set>
+		where noticeId = #{noticeid}
+	</update>
+	
+	<delete id="delete">
+		delete from notice where noticeId = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from notice where noticeId in 
+		<foreach item="noticeid" collection="array" open="(" separator="," close=")">
+			#{noticeid}
+		</foreach>
+	</delete>
+
+</mapper>

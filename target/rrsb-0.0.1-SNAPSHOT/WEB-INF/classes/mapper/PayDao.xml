@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.dao.PayDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.entity.PayEntity" id="payMap">
+        <result property="payid" column="payId"/>
+        <result property="paymoney" column="payMoney"/>
+        <result property="payexpiretime" column="payExpireTime"/>
+        <result property="paytime" column="payTime"/>
+        <result property="payemp" column="payEmp"/>
+        <result property="entid" column="entId"/>
+        <result property="zflx" column="zflx"/>
+        <result property="zfzh" column="zfzh"/>
+        <result property="zfbh" column="zfbh"/>
+        <result property="bz1" column="bz1"/>
+        <result property="bz2" column="bz2"/>
+        <result property="bz3" column="bz3"/>
+    </resultMap>
+    
+    
+    <select id="queryByCondition" resultType="java.util.Map" parameterType="java.util.Map">
+		select * from pay left join employee on pay.payemp = employee.empid
+		<where>
+			<if test="entid != null">pay.entid= #{entid}</if>
+			<if test="empid != null"> and pay.payemp= #{empid}</if>
+		</where>
+	</select>
+	
+	
+	
+	
+	<select id="payExcel" resultType="java.util.Map" >
+		SELECT e.empName empname,e.empPhone empphone, p.payTime payTime,p.payExpireTime expireTime,p.zflx zflx,p.payMoney payMoney from pay p LEFT JOIN employee e on p.payEmp = e.empId where entId =#{entId}
+
+       
+                order by payId desc
+			
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+    
+
+	<select id="queryObject" resultType="io.renren.entity.PayEntity">
+		select * from pay where payId = #{value}
+	</select>
+
+	<select id="queryList" resultType="io.renren.entity.PayEntity">
+		select * from pay 
+		<where>
+		<if test="entId != null">entId =#{entId}</if>
+		</where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by payId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+	
+	<select id="queryBack" resultType="java.util.Map">
+		select p.zfbh , p.payTime , emp.empName , p.payMoney ,  zflx  from pay p left join employee emp on p.payEmp=emp.empId where entId =#{entId} 
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by payId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from pay
+		 <where>
+		 <if test='entId!= null'>entId =#{entId}</if>
+		 </where>
+	</select>
+	 
+	<insert id="save" parameterType="io.renren.entity.PayEntity" useGeneratedKeys="true" keyProperty="payid">
+		insert into pay
+		(
+			`payMoney`, 
+			`payExpireTime`, 
+			`payTime`, 
+			`payEmp`, 
+			`entId`, 
+			`zflx`, 
+			`zfzh`, 
+			`zfbh`, 
+			`bz1`, 
+			`bz2`, 
+			`bz3`
+		)
+		values
+		(
+			#{paymoney}, 
+			#{payexpiretime}, 
+			#{paytime}, 
+			#{payemp}, 
+			#{entid}, 
+			#{zflx}, 
+			#{zfzh}, 
+			#{zfbh}, 
+			#{bz1}, 
+			#{bz2}, 
+			#{bz3}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.entity.PayEntity">
+		update pay 
+		<set>
+			<if test="paymoney != null">`payMoney` = #{paymoney}, </if>
+			<if test="payexpiretime != null">`payExpireTime` = #{payexpiretime}, </if>
+			<if test="paytime != null">`payTime` = #{paytime}, </if>
+			<if test="payemp != null">`payEmp` = #{payemp}, </if>
+			<if test="entid != null">`entId` = #{entid}, </if>
+			<if test="zflx != null">`zflx` = #{zflx}, </if>
+			<if test="zfzh != null">`zfzh` = #{zfzh}, </if>
+			<if test="zfbh != null">`zfbh` = #{zfbh}, </if>
+			<if test="bz1 != null">`bz1` = #{bz1}, </if>
+			<if test="bz2 != null">`bz2` = #{bz2}, </if>
+			<if test="bz3 != null">`bz3` = #{bz3}</if>
+		</set>
+		where payId = #{payid}
+	</update>
+	
+	<delete id="delete">
+		delete from pay where payId = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from pay where payId in 
+		<foreach item="payid" collection="array" open="(" separator="," close=")">
+			#{payid}
+		</foreach>
+	</delete>
+
+</mapper>

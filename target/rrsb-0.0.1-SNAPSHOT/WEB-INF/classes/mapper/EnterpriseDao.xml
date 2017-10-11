@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.dao.EnterpriseDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.entity.EnterpriseEntity" id="enterpriseMap">
+        <result property="entid" column="entId"/>
+        <result property="entname" column="entName"/>
+        <result property="entcreatetime" column="entCreateTime"/>
+        <result property="entemp" column="entEmp"/>
+        <result property="entmanager" column="entManager"/>
+        <result property="entphone" column="entPhone"/>
+        <result property="entstate" column="entState"/>
+        <result property="entprovice" column="entProvice"/>
+        <result property="entcity" column="entCity"/>
+        <result property="entarea" column="entArea"/>
+        <result property="entaddress" column="entAddress"/>
+        <result property="bz1" column="bz1"/>
+        <result property="bz2" column="bz2"/>
+        <result property="bz3" column="bz3"/>
+    </resultMap>
+    
+    <select id="queryListByCondition" resultType="io.renren.entity.EnterpriseEntity" parameterType="io.renren.entity.EnterpriseEntity">
+		select * from enterprise 
+		<where>
+			<if test="entname != null">entName=#{entname}</if>
+			<if test="entemp != null">and entEmp=#{entemp}</if>
+			<if test="entphone != null">and entPhone=#{entphone}</if>
+		</where>
+
+	</select>
+
+	<select id="queryObject" resultType="io.renren.entity.EnterpriseEntity">
+		select * from enterprise where entId = #{value}
+	</select>
+
+	<select id="queryList" resultType="io.renren.entity.EnterpriseEntity">
+		select * from enterprise
+		
+		
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by entId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from enterprise 
+	</select>
+	 
+	 <select id="getEntId" resultType="long" parameterType="io.renren.entity.EnterpriseEntity">
+		select entid from enterprise 
+		<where>
+		<if test="entname != null">entName=#{entname}</if>
+		<if test="entemp != null">and entEmp=#{entemp}</if>
+		<if test="entphone != null">and entPhone=#{entphone}</if>
+		</where>
+		
+	</select>
+	 
+	 
+	 
+	<insert id="save" parameterType="io.renren.entity.EnterpriseEntity" useGeneratedKeys="true" keyProperty="entid">
+		insert into enterprise
+		(
+			`entName`, 
+			`entCreateTime`, 
+			`entEmp`, 
+			`entManager`, 
+			`entPhone`, 
+			`entState`, 
+			`entProvice`, 
+			`entCity`, 
+			`entArea`, 
+			`entAddress`, 
+			`bz1`, 
+			`bz2`, 
+			`bz3`
+		)
+		values
+		(
+			#{entname}, 
+			#{entcreatetime}, 
+			#{entemp}, 
+			#{entmanager}, 
+			#{entphone}, 
+			#{entstate}, 
+			#{entprovice}, 
+			#{entcity}, 
+			#{entarea}, 
+			#{entaddress}, 
+			#{bz1}, 
+			#{bz2}, 
+			#{bz3}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.entity.EnterpriseEntity">
+		update enterprise 
+		<set>
+			<if test="entname != null">`entName` = #{entname}, </if>
+			<if test="entcreatetime != null">`entCreateTime` = #{entcreatetime}, </if>
+			<if test="entemp != null">`entEmp` = #{entemp}, </if>
+			<if test="entmanager != null">`entManager` = #{entmanager}, </if>
+			<if test="entphone != null">`entPhone` = #{entphone}, </if>
+			<if test="entstate != null">`entState` = #{entstate}, </if>
+			<if test="entprovice != null">`entProvice` = #{entprovice}, </if>
+			<if test="entcity != null">`entCity` = #{entcity}, </if>
+			<if test="entarea != null">`entArea` = #{entarea}, </if>
+			<if test="entaddress != null">`entAddress` = #{entaddress}, </if>
+			<if test="bz1 != null">`bz1` = #{bz1}, </if>
+			<if test="bz2 != null">`bz2` = #{bz2}, </if>
+			<if test="bz3 != null">`bz3` = #{bz3}</if>
+		</set>
+		where entId = #{entid}
+	</update>
+	
+	<delete id="delete">
+		delete from enterprise where entId = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from enterprise where entId in 
+		<foreach item="entid" collection="array" open="(" separator="," close=")">
+			#{entid}
+		</foreach>
+	</delete>
+
+</mapper>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.dao.FeedbackDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.entity.FeedbackEntity" id="feedbackMap">
+        <result property="feedbackid" column="feedbackId"/>
+        <result property="empid" column="empId"/>
+        <result property="fbtype" column="fbType"/>
+        <result property="fbdesc" column="fbDesc"/>
+        <result property="fbcontent" column="fbContent"/>
+        <result property="imgs" column="imgs"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="io.renren.entity.FeedbackEntity">
+		select * from feedback where feedbackId = #{value}
+	</select>
+
+	<select id="queryList" resultType="io.renren.entity.FeedbackEntity">
+		select * from feedback
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by feedbackId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from feedback 
+	</select>
+	 
+	<insert id="save" parameterType="io.renren.entity.FeedbackEntity">
+		insert into feedback
+		(
+			`feedbackId`, 
+			`empId`, 
+			`fbType`, 
+			`fbDesc`, 
+			`fbContent`, 
+			`imgs`
+		)
+		values
+		(
+			#{feedbackid}, 
+			#{empid}, 
+			#{fbtype}, 
+			#{fbdesc}, 
+			#{fbcontent}, 
+			#{imgs}
+		)
+	</insert>
+	
+	<insert id="saveapi" parameterType="java.util.Map">
+		insert into feedback
+		(
+			`feedbackId`, 
+			`empId`, 
+			`fbType`, 
+			`fbDesc`, 
+			`fbContent`, 
+			`imgs`
+		)
+		values
+		(
+			#{feedbackid}, 
+			#{empid}, 
+			#{fbtype}, 
+			#{fbdesc}, 
+			#{fbcontent}, 
+			#{imgs}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.entity.FeedbackEntity">
+		update feedback 
+		<set>
+			<if test="empid != null">`empId` = #{empid}, </if>
+			<if test="fbtype != null">`fbType` = #{fbtype}, </if>
+			<if test="fbdesc != null">`fbDesc` = #{fbdesc}, </if>
+			<if test="fbcontent != null">`fbContent` = #{fbcontent}, </if>
+			<if test="imgs != null">`imgs` = #{imgs}</if>
+		</set>
+		where feedbackId = #{feedbackid}
+	</update>
+	
+	<delete id="delete">
+		delete from feedback where feedbackId = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from feedback where feedbackId in 
+		<foreach item="feedbackid" collection="array" open="(" separator="," close=")">
+			#{feedbackid}
+		</foreach>
+	</delete>
+
+</mapper>

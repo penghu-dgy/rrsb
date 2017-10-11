@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.dao.WorkDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.entity.WorkEntity" id="workMap">
+        <result property="workid" column="workId"/>
+        <result property="workcontent" column="workContent"/>
+        <result property="worktime" column="workTime"/>
+        <result property="workemp" column="workEmp"/>
+        <result property="workimage" column="workImage"/>
+        <result property="workcust" column="workCust"/>
+        <result property="bz1" column="bz1"/>
+        <result property="bz2" column="bz2"/>
+        <result property="bz3" column="bz3"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="io.renren.entity.WorkEntity">
+		select * from work where workId = #{value}
+	</select>
+
+	<select id="queryList" resultType="io.renren.entity.WorkEntity">
+		select * from work
+		<where>
+			<if test="workcust != null">workcust = #{workcust}</if>
+		</where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by workId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from work 
+	</select>
+	 
+	<insert id="save" parameterType="io.renren.entity.WorkEntity" useGeneratedKeys="true" keyProperty="workid">
+		insert into work
+		(
+			`workContent`, 
+			`workTime`, 
+			`workEmp`, 
+			`workImage`, 
+			`workCust`, 
+			`bz1`, 
+			`bz2`, 
+			`bz3`
+		)
+		values
+		(
+			#{workcontent}, 
+			#{worktime}, 
+			#{workemp}, 
+			#{workimage}, 
+			#{workcust}, 
+			#{bz1}, 
+			#{bz2}, 
+			#{bz3}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.entity.WorkEntity">
+		update work 
+		<set>
+			<if test="workcontent != null">`workContent` = #{workcontent}, </if>
+			<if test="worktime != null">`workTime` = #{worktime}, </if>
+			<if test="workemp != null">`workEmp` = #{workemp}, </if>
+			<if test="workimage != null">`workImage` = #{workimage}, </if>
+			<if test="workcust != null">`workCust` = #{workcust}, </if>
+			<if test="bz1 != null">`bz1` = #{bz1}, </if>
+			<if test="bz2 != null">`bz2` = #{bz2}, </if>
+			<if test="bz3 != null">`bz3` = #{bz3}</if>
+		</set>
+		where workId = #{workid}
+	</update>
+	
+	<delete id="delete">
+		delete from work where workId = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from work where workId in 
+		<foreach item="workid" collection="array" open="(" separator="," close=")">
+			#{workid}
+		</foreach>
+	</delete>
+	
+	<delete id="deleteCustBatch">
+		delete from work where workcust = #{workcust}
+	</delete>
+
+</mapper>

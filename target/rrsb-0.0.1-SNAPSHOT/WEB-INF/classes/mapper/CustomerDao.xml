@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.renren.dao.CustomerDao">
+
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.entity.CustomerEntity" id="customerMap">
+        <result property="custid" column="custId"/>
+        <result property="custname" column="custName"/>
+        <result property="custtype" column="custType"/>
+        <result property="custprovince" column="custProvince"/>
+        <result property="custcity" column="custCity"/>
+        <result property="custarea" column="custArea"/>
+        <result property="custaddress" column="custAddress"/>
+        <result property="custphone" column="custPhone"/>
+        <result property="custlng" column="custLng"/>
+        <result property="custlat" column="custLat"/>
+        <result property="custtime" column="custTime"/>
+        <result property="custstate" column="custState"/>
+        <result property="custemp" column="custEmp"/>
+        <result property="bz1" column="bz1"/>
+        <result property="bz2" column="bz2"/>
+        <result property="bz3" column="bz3"/>
+    </resultMap>
+    
+   <!--  <select id="findAll" parameterType="java.util.Map" resultType="io.renren.entity.CustomerEntity">
+    	select * from customer where custemp = #{custemp}
+    	<if test="search != null and !&quot;&quot;.equals(search.trim())">
+	    		and empphone like '%' #{search} '%'
+	    </if>
+    </select> -->
+    
+    <select id="findAll" parameterType="java.util.Map" resultType="io.renren.entity.CustomerEntity">
+    	select * from customer where custemp = #{custemp}
+    	<if test="search != null and !&quot;&quot;.equals(search.trim())">
+	    		and ( custphone like CONCAT('%', #{search}, '%')
+	    		or custname like CONCAT('%', #{search}, '%')
+	    		or custaddress like CONCAT('%', #{search}, '%')
+	    		)
+	    </if>
+	    order by custid desc 
+    </select>
+    
+    <select id="selectByPhone" resultType='io.renren.entity.CustomerEntity'>
+    	select * from customer cu left join employee e on cu.custEmp = e.empId 
+    	<where>
+    	<if test="entId != null">e.empEnt = #{entId}</if>
+    	<if test="custphone != null">and custPhone = #{custphone}</if>
+    	</where> 
+    </select>
+    
+    
+    <select id="custExcel" resultType="java.util.Map">
+		select c.custName custName ,c.custType custType, c.custProvince custProvince,c.custCity custCity,c.custArea custArea,c.custAddress custAddress, c.custPhone custPhone,e.empName empName,c.custTime custTime 
+		
+		from customer c LEFT JOIN employee e on c.custEmp = e.empId 
+		
+		WHERE e.empId in 
+		
+		(SELECT empId from employee WHERE employee.empEnt=#{entId})
+
+	</select>
+    
+
+	<select id="queryObject" resultType="io.renren.entity.CustomerEntity">
+		select * from customer where custId = #{value}
+	</select>
+	
+	
+<!-- 
+	<select id="queryList" resultType="io.renren.entity.CustomerEntity">
+		select * from customer
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by custId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select> -->
+	
+	
+	 <select id="queryList" resultType="io.renren.entity.CustomerEntity">
+		select * from customer 
+		<where> 
+		<if test="custemp != null">custEmp =#{custemp}</if>
+		
+		</where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by custId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+	
+	<select id="queryLists" resultType="java.util.Map" parameterType="java.util.Map">
+		select c.custId,c.custName,c.custType,c.custProvince,c.custCity,c.custArea,c.custAddress,c.custPhone,c.custTime,e.empName from customer c left join employee e on c.custEmp=e.empId 
+		<where>
+		<if test="entId != null">custEmp in (select empId from employee where empEnt=#{entId})</if>
+		<if test="custArea != null">and custArea = #{custArea}</if>
+		<if test="custCity != null">and custCity = #{custCity}</if>
+		<if test="custProvince !=null">and custProvince = #{custProvince}</if>
+		<if test="custid != null"> and custId=#{custid}</if>
+		<if test="sea != null">and (custPhone like CONCAT(CONCAT('%', #{sea}), '%') or custName like CONCAT(CONCAT('%', #{sea}), '%')  ) </if>
+		<if test="startTime !=null and endTime != null">
+			AND unix_timestamp(c.custTime) BETWEEN UNIX_TIMESTAMP(#{startTime}) AND unix_timestamp(#{endTime})
+			</if>
+		
+		</where> 
+		
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by custId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+	
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from customer  
+		<where>
+		<if test='entId !=null'> custEmp in (select empId from employee where empEnt=#{entId})</if>
+		
+		</where>
+	</select>
+	 
+	<insert id="save" parameterType="io.renren.entity.CustomerEntity" useGeneratedKeys="true" keyProperty="custid">
+		insert into customer
+		(
+			`custName`, 
+			`custType`, 
+			`custProvince`, 
+			`custCity`, 
+			`custArea`, 
+			`custAddress`, 
+			`custPhone`, 
+			`custLng`, 
+			`custLat`, 
+			`custTime`, 
+			`custState`, 
+			`custEmp`, 
+			`bz1`, 
+			`bz2`, 
+			`bz3`
+		)
+		values
+		(
+			#{custname}, 
+			#{custtype}, 
+			#{custprovince}, 
+			#{custcity}, 
+			#{custarea}, 
+			#{custaddress}, 
+			#{custphone}, 
+			#{custlng}, 
+			#{custlat}, 
+			#{custtime}, 
+			#{custstate}, 
+			#{custemp}, 
+			#{bz1}, 
+			#{bz2}, 
+			#{bz3}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.entity.CustomerEntity">
+		update customer 
+		<set>
+			<if test="custname != null">`custName` = #{custname}, </if>
+			<if test="custtype != null">`custType` = #{custtype}, </if>
+			<if test="custprovince != null">`custProvince` = #{custprovince}, </if>
+			<if test="custcity != null">`custCity` = #{custcity}, </if>
+			<if test="custarea != null">`custArea` = #{custarea}, </if>
+			<if test="custaddress != null">`custAddress` = #{custaddress}, </if>
+			<if test="custphone != null">`custPhone` = #{custphone}, </if>
+			<if test="custlng != null">`custLng` = #{custlng}, </if>
+			<if test="custlat != null">`custLat` = #{custlat}, </if>
+			<if test="custtime != null">`custTime` = #{custtime}, </if>
+			<if test="custstate != null">`custState` = #{custstate}, </if>
+			<if test="custemp != null">`custEmp` = #{custemp}, </if>
+			<if test="bz1 != null">`bz1` = #{bz1}, </if>
+			<if test="bz2 != null">`bz2` = #{bz2}, </if>
+			<if test="bz3 != null">`bz3` = #{bz3}</if>
+		</set>
+		where custId = #{custid}
+	</update>
+	
+	<delete id="delete">
+		delete from customer where custId = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from customer where custId in 
+		<foreach item="custid" collection="array" open="(" separator="," close=")">
+			#{custid}
+		</foreach>
+	</delete>
+
+</mapper>

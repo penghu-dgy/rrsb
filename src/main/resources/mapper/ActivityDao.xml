@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.dao.ActivityDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.entity.ActivityEntity" id="activityMap">
+        <result property="actid" column="actId"/>
+        <result property="acttype" column="actType"/>
+        <result property="actbegintime" column="actBeginTime"/>
+        <result property="actendtime" column="actEndTime"/>
+        <result property="actdays" column="actDays"/>
+        <result property="actreason" column="actReason"/>
+        <result property="actaddress" column="actAddress"/>
+        <result property="actpublisher" column="actPublisher"/>
+        <result property="actchecker" column="actChecker"/>
+        <result property="actstate" column="actState"/>
+        <result property="actpublishtime" column="actpublishtime"/>
+        <result property="bz2" column="bz2"/>
+        <result property="bz3" column="bz3"/>
+    </resultMap>
+    
+    <select id="queryActivity"  resultType="java.util.Map"  parameterType="java.util.Map">
+    	select * from activity left join employee on activity.actpublisher=employee.empid
+    	<where>
+    		<if test="actpublisher !=null ">actpublisher=#{actpublisher}</if>
+    		<if test="actchecker !=null ">or actchecker=#{actchecker}</if>
+    		<if test="actstate !=null ">and actstate=#{actstate}</if>
+    		<if test="actid !=null"> and activity.actid=#{actid}</if>
+    	</where>
+    	 order by actId desc
+    	
+    </select>
+    
+	<select id="queryObject" resultType="io.renren.entity.ActivityEntity">
+		select * from activity where actId = #{value}
+	</select>
+	
+	<select id="backSee" resultType='java.util.HashMap'>
+	
+	SELECT 
+	a.actType, 
+	emp.empName actPulisher,
+	 em.empName actChecker,
+	 emp.empPhone phone,
+	 a.actBeginTime beginTime,
+	 a.actEndTime endTime,
+	 a.actDays days ,
+	 a.actReason actReason ,
+	 a.actPublishTime actPushTime ,
+	 (case a.actState when 0 then '申请中' when 1 then '通过' when 2 then '拒绝' end ) actState 
+	 from activity a  
+	LEFT JOIN employee emp on a.actPublisher=emp.empId 
+	LEFT JOIN employee em on a.actChecker=em.empId WHERE actPublisher 
+	in (select empId from employee where empEnt=#{entId})
+	  <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by actId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	
+	</select>
+	
+	
+	<select id="queryLists" resultType="io.renren.entity.ActivityEntity">
+		select * from activity  
+		<where>
+		<if test="entId != null">actPublisher in (select empId from employee where empEnt=#{entId})</if>
+			<if test="actid != null"> actid= #{actid}</if>
+			<if test="actchecker != null"> and actchecker= #{actchecker}</if>
+			
+		</where>
+		
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by actId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+	
+	
+	<select id="queryList" resultType="io.renren.entity.ActivityEntity">
+		select * from activity
+		<where>
+			<if test="actid != null"> actid= #{actid}</if>
+			<if test="actchecker != null"> and actchecker= #{actchecker}</if>
+			
+		</where>
+		
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by actId desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from activity 
+		<where>
+		<if test="entId != null"> actPublisher in (select empId from employee where empEnt=#{entId})</if>
+		
+		</where>
+	</select>
+	 
+	<insert id="save" parameterType="io.renren.entity.ActivityEntity" useGeneratedKeys="true" keyProperty="actid">
+		insert into activity
+		(
+			`actType`, 
+			`actBeginTime`, 
+			`actEndTime`, 
+			`actDays`, 
+			`actReason`, 
+			`actAddress`, 
+			`actPublisher`, 
+			`actChecker`, 
+			`actState`, 
+			`actpublishtime`, 
+			`bz2`, 
+			`bz3`
+		)
+		values
+		(
+			#{acttype}, 
+			#{actbegintime}, 
+			#{actendtime}, 
+			#{actdays}, 
+			#{actreason}, 
+			#{actaddress}, 
+			#{actpublisher},
+			#{actchecker}, 
+			#{actstate}, 
+			#{actpublishtime}, 
+			#{bz2}, 
+			#{bz3}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.entity.ActivityEntity">
+		update activity 
+		<set>
+			<if test="acttype != null">`actType` = #{acttype}, </if>
+			<if test="actbegintime != null">`actBeginTime` = #{actbegintime}, </if>
+			<if test="actendtime != null">`actEndTime` = #{actendtime}, </if>
+			<if test="actdays != null">`actDays` = #{actdays}, </if>
+			<if test="actreason != null">`actReason` = #{actreason}, </if>
+			<if test="actaddress != null">`actAddress` = #{actaddress}, </if>
+			<if test="actpublisher != null">`actPublisher` = #{actpublisher}, </if>
+			<if test="actchecker != null">`actChecker` = #{actchecker}, </if>
+			<if test="actstate != null">`actState` = #{actstate}, </if>
+			<if test="actpublishtime != null">`actpublishtime` = #{actpublishtime}, </if>
+			<if test="bz2 != null">`bz2` = #{bz2}, </if>
+			<if test="bz3 != null">`bz3` = #{bz3}</if>
+		</set>
+		where actId = #{actid}
+	</update>
+	
+	<delete id="delete">
+		delete from activity where actId = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from activity where actId in 
+		<foreach item="actid" collection="array" open="(" separator="," close=")">
+			#{actid}
+		</foreach>
+	</delete>
+
+</mapper>
